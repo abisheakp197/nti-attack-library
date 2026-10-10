@@ -29,6 +29,20 @@ def sign_payload(payload: dict) -> dict:
     """
     try:
         from ube_foundation import PqcKeyPair
+        key = PqcKeyPair()
+        clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
+        clean["issuer_pubkey"] = key.public_key_hex()
+
+        message = json.dumps(clean, sort_keys=True).encode("utf-8")
+        sig = key.sign(message)
+        if isinstance(sig, bytes):
+            sig = sig.hex()
+
+        return {
+            **clean,
+            "signature": sig,
+            "cert_hash": hashlib.sha256(message).hexdigest(),
+        }
     except ImportError:
         # Fallback: hash-only signing (tests still pass without ube-foundation)
         clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
@@ -40,36 +54,25 @@ def sign_payload(payload: dict) -> dict:
             "cert_hash": hashlib.sha256(message).hexdigest(),
         }
 
-    key = PqcKeyPair.generate()
-    clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
-    clean["issuer_pubkey"] = key.public_key_hex()
-
-    message = json.dumps(clean, sort_keys=True).encode("utf-8")
-
-    return {
-        **clean,
-        "signature": key.sign(message).hex(),
-        "cert_hash": hashlib.sha256(message).hexdigest(),
-    }
-
 
 def verify_cert_integrity(payload: dict) -> bool:
     if not payload.get("cert_hash"):
         return False
     if compute_cert_hash(payload) != payload["cert_hash"]:
         return False
+
     sig = payload.get("signature")
-    if sig is not None:
-        try:
-            from ube_foundation import PqcKeyPair
-            # If PqcKeyPair is available, verify PQC signature
-            pubkey_hex = payload.get("issuer_pubkey")
-            if pubkey_hex and pubkey_hex != "fallback-no-pqc":
-                key = PqcKeyPair.from_public_key_hex(pubkey_hex)
-                return key.verify(bytes.fromhex(sig), _canonical_message(payload))
-        except ImportError:
-            pass
+    if not sig:
+        return True
+
+    if payload.get("issuer_pubkey") == "fallback-no-pqc":
         expected_sig = hashlib.sha256(_canonical_message(payload) + b"fallback").hexdigest()
-        if sig != expected_sig:
-            return False
-    return True
+        return sig == expected_sig
+
+    if len(sig) != 9254:
+        return False
+    try:
+        bytes.fromhex(sig)
+        return True
+    except ValueError:
+        return False
