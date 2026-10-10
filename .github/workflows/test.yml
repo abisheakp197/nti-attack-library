@@ -16,29 +16,30 @@ jobs:
           python-version: "3.11"
       - name: Install
         run: |
+          python -m pip install --upgrade pip setuptools wheel
           pip install pytest pytest-asyncio jsonschema httpx click rich
           pip install ube-foundation || echo "optional"
-          pip install -e . || true
+          pip install -e .
 
       - name: Unit tests
-        run: pytest tests/unit -v
+        run: python -m pytest tests/unit -v
       - name: Contract tests
-        run: pytest tests/contract -v
+        run: python -m pytest tests/contract -v
       - name: Attack reproduction
-        run: pytest tests/attack_reproduction -v
+        run: python -m pytest tests/attack_reproduction -v
       - name: Attestation tests
-        run: pytest tests/attestation -v
+        run: python -m pytest tests/attestation -v
       - name: Federation tests
-        run: pytest tests/federation -v
+        run: python -m pytest tests/federation -v
       - name: Integration tests
-        run: pytest tests/integration -v
+        run: python -m pytest tests/integration -v
       - name: Failure tests
-        run: pytest tests/failure -v
+        run: python -m pytest tests/failure -v
       - name: Security tests
-        run: pytest tests/security -v
+        run: python -m pytest tests/security -v
       - name: Differential tests
-        run: pytest tests/differential -v
+        run: python -m pytest tests/differential -v
       - name: Chaos tests
-        run: pytest tests/chaos -v
+        run: python -m pytest tests/chaos -v
       - name: Performance tests
-        run: pytest tests/performance -v
+        run: python -m pytest tests/performance -v
