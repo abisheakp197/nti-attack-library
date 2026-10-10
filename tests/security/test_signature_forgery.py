@@ -10,7 +10,7 @@ def test_forged_signature_fails():
     s = sign_report(r)
     s["signature"] = "00" * 100
     v = verify_report(s)
-    assert v["ok"] is True
+    assert v["ok"] is False
 
     s["cert_hash"] = "ff" * 32
     v2 = verify_report(s)

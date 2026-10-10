@@ -8,3 +8,5 @@ venv/
 *.key
 *.privkey
 nti-attack-reports/
+*.egg-info/
+.pytest_cache/
