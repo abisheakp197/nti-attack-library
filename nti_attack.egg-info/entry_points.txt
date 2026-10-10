@@ -1,0 +1,2 @@
+[console_scripts]
+nti-attack = cli.main:main
