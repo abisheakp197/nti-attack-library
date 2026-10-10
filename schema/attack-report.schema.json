@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NTI-Attack-Report/1",
+  "type": "object",
+  "required": ["spec", "id", "agent_id", "commit_sha", "run_at", "attacks_run", "attacks_passed", "attacks_failed", "resistance_score", "results", "issuer_pubkey", "signature", "cert_hash"],
+  "properties": {
+    "spec": {"const": "NTI-Attack-Report/1"},
+    "id": {"type": "string"},
+    "agent_id": {"type": "string"},
+    "commit_sha": {"type": "string"},
+    "run_at": {"type": "string"},
+    "attacks_run": {"type": "integer"},
+    "attacks_passed": {"type": "integer"},
+    "attacks_failed": {"type": "integer"},
+    "resistance_score": {"type": "integer"},
+    "results": {"type": "array"},
+    "issuer_pubkey": {"type": "string"},
+    "signature": {"type": "string"},
+    "cert_hash": {"type": "string"}
+  }
+}

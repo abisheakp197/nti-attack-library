@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>NTI Attack Library</title>
+<style>
+body{font-family:system-ui;background:#0a0a0a;color:#eee;padding:2rem;max-width:900px;margin:auto;line-height:1.6}
+h1,h2{color:#fff}
+code,pre{background:#111;padding:.2rem .5rem;border-radius:5px;color:#4ade80;font-family:monospace}
+pre{padding:1rem;overflow-x:auto;border:1px solid #222}
+a{color:#22d3ee}
+table{width:100%;border-collapse:collapse;margin:1rem 0}
+th,td{text-align:left;padding:.6rem;border-bottom:1px solid #222}
+th{color:#888;font-weight:500}
+</style></head>
+<body>
+<h1>NTI Attack Library</h1>
+<p>A signed, federated, machine-consumable attack knowledge base for AI agents.</p>
+
+<h2>What Makes This Unique</h2>
+<table>
+<tr><th>Existing</th><th>NTI Attack Library</th></tr>
+<tr><td>OWASP AI: general guidance</td><td>Dilithium5-signed, machine-readable</td></tr>
+<tr><td>MITRE ATLAS: threat model only</td><td>Live API + federation-mirrorable</td></tr>
+<tr><td>NIST AI RMF: framework</td><td>Consumed directly by nti-scanner rules</td></tr>
+<tr><td>Static docs</td><td>Federated — anyone can mirror</td></tr>
+<tr><td>No provenance</td><td>Every entry cryptographically signed</td></tr>
+</table>
+
+<h2>Install</h2>
+<pre>pip install nti-attack</pre>
+
+<h2>Run</h2>
+<pre>nti-attack list-attacks
+nti-attack scan --url https://your-agent.example.com --agent-id my-agent</pre>
+
+<h2>Verify</h2>
+<pre>nti-attack verify ./nti-attack-reports/report.json</pre>
+
+<h2>Links</h2>
+<ul>
+<li><a href="https://abisheakp197.github.io/nti-spec/">NTI-1 Specification</a></li>
+<li><a href="https://pypi.org/project/nti-scanner/">nti-scanner</a></li>
+<li><a href="https://pypi.org/project/ube-foundation/">ube-foundation</a></li>
+</ul>
+</body>
+</html>
