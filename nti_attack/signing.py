@@ -2,55 +2,77 @@
 
 import json
 import hashlib
+from typing import Optional
+
+
+def _canonical_message(payload: dict) -> bytes:
+    """The exact bytes that get hashed and signed.
+
+    Excludes 'signature' and 'cert_hash' only.
+    Includes 'issuer_pubkey' so it is protected by the hash too.
+    """
+    clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
+    return json.dumps(clean, sort_keys=True).encode("utf-8")
+
+
+def compute_cert_hash(payload: dict) -> str:
+    return hashlib.sha256(_canonical_message(payload)).hexdigest()
 
 
 def sign_payload(payload: dict) -> dict:
-    """Sign a payload with Dilithium5. Returns payload + signature + cert_hash."""
+    """Sign a payload with Dilithium5.
+
+    IMPORTANT: issuer_pubkey MUST be included in the payload BEFORE
+    the hash is computed, otherwise verification (which sees issuer_pubkey)
+    will compute a different hash. This is why we add issuer_pubkey first,
+    then hash, then sign.
+    """
     try:
         from ube_foundation import PqcKeyPair
         key = PqcKeyPair()
-        clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash", "issuer_pubkey")}
+        clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
+        clean["issuer_pubkey"] = key.public_key_hex()
+
         message = json.dumps(clean, sort_keys=True).encode("utf-8")
         sig = key.sign(message)
         if isinstance(sig, bytes):
             sig = sig.hex()
+
         return {
             **clean,
             "signature": sig,
-            "issuer_pubkey": key.public_key_hex(),
             "cert_hash": hashlib.sha256(message).hexdigest(),
         }
-    except Exception:
-        clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash", "issuer_pubkey")}
+    except ImportError:
+        # Fallback: hash-only signing (tests still pass without ube-foundation)
+        clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
+        clean["issuer_pubkey"] = "fallback-no-pqc"
         message = json.dumps(clean, sort_keys=True).encode("utf-8")
-        cert_hash = hashlib.sha256(message).hexdigest()
         return {
             **clean,
-            "signature": "simulated_signature_" + cert_hash[:16],
-            "issuer_pubkey": "simulated_pubkey_" + cert_hash[:16],
-            "cert_hash": cert_hash,
+            "signature": hashlib.sha256(message + b"fallback").hexdigest(),
+            "cert_hash": hashlib.sha256(message).hexdigest(),
         }
-
-
-def compute_cert_hash(payload: dict) -> str:
-    clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash", "issuer_pubkey")}
-    message = json.dumps(clean, sort_keys=True).encode("utf-8")
-    return hashlib.sha256(message).hexdigest()
 
 
 def verify_cert_integrity(payload: dict) -> bool:
-    if compute_cert_hash(payload) != payload.get("cert_hash"):
+    if not payload.get("cert_hash"):
         return False
-    signature = payload.get("signature")
-    if not signature:
+    if compute_cert_hash(payload) != payload["cert_hash"]:
+        return False
+
+    sig = payload.get("signature")
+    if not sig:
         return True
-    if signature.startswith("simulated_signature_"):
-        expected_sig = "simulated_signature_" + payload.get("cert_hash", "")[:16]
-        return signature == expected_sig
-    if len(signature) != 9254:
+
+    if payload.get("issuer_pubkey") == "fallback-no-pqc":
+        expected_sig = hashlib.sha256(_canonical_message(payload) + b"fallback").hexdigest()
+        return sig == expected_sig
+
+    if len(sig) != 9254:
         return False
     try:
-        bytes.fromhex(signature)
+        bytes.fromhex(sig)
         return True
     except ValueError:
         return False
