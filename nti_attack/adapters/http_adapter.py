@@ -26,7 +26,11 @@ class HttpAgentAdapter(AgentAdapter):
                     return AgentResponse(output="", error=f"HTTP {r.status_code}")
                 data = r.json()
                 return AgentResponse(output=str(data.get("output", "")), raw=data)
+        except httpx.HTTPError as e:
+            logger.warning("HTTP invoke failed for %s: %s", self.base_url, e)
+            return AgentResponse(output="", error=str(e))
         except Exception as e:
+            logger.warning("Error invoking HTTP agent at %s: %s", self.base_url, e)
             return AgentResponse(output="", error=str(e))
 
     def reset(self) -> None:
