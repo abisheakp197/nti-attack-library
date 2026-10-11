@@ -48,7 +48,11 @@ def verify_cert_integrity(payload: dict, key: Optional[PqcKeyPair] = None) -> bo
             bytes.fromhex(sig)
         except ValueError:
             return False
+        if not payload.get("issuer_pubkey"):
+            return False
         if key is not None:
+            if key.public_key_hex() != payload["issuer_pubkey"]:
+                return False
             message = _canonical_bytes(payload)
             if not key.verify(message, sig):
                 return False
