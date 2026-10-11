@@ -10,3 +10,8 @@ venv/
 nti-attack-reports/
 *.egg-info/
 .pytest_cache/
+dist/
+build/
+ube-foundation/
+nti-benchmark/
+nti-attack-library

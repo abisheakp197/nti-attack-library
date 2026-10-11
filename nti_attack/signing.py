@@ -9,6 +9,7 @@ Uses the real ube_foundation PqcKeyPair API:
 
 import json
 import hashlib
+from typing import Optional
 from ube_foundation import PqcKeyPair
 
 
@@ -21,8 +22,9 @@ def compute_cert_hash(payload: dict) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
 
 
-def sign_payload(payload: dict) -> dict:
-    key = PqcKeyPair()
+def sign_payload(payload: dict, key: Optional[PqcKeyPair] = None) -> dict:
+    if key is None:
+        key = PqcKeyPair()
     clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
     clean["issuer_pubkey"] = key.public_key_hex()
     message = json.dumps(clean, sort_keys=True).encode("utf-8")
@@ -33,7 +35,21 @@ def sign_payload(payload: dict) -> dict:
     }
 
 
-def verify_cert_integrity(payload: dict) -> bool:
+def verify_cert_integrity(payload: dict, key: Optional[PqcKeyPair] = None) -> bool:
     if not payload.get("cert_hash"):
         return False
-    return compute_cert_hash(payload) == payload["cert_hash"]
+    if compute_cert_hash(payload) != payload["cert_hash"]:
+        return False
+    sig = payload.get("signature")
+    if sig is not None:
+        if not isinstance(sig, str) or len(sig) != 9254:
+            return False
+        try:
+            bytes.fromhex(sig)
+        except ValueError:
+            return False
+        if key is not None:
+            message = _canonical_bytes(payload)
+            if not key.verify(message, sig):
+                return False
+    return True

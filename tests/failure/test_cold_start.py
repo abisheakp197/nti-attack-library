@@ -11,4 +11,4 @@ def test_all_modules_import():
     import nti_attack.adapters.callable_adapter
     import nti_attack.adapters.http_adapter
     import nti_attack.adapters.langchain_adapter
-    assert True
+    assert nti_attack is not None

@@ -6,6 +6,7 @@ attacks/_registry.py
 attacks/audit/NTI_A301.py
 attacks/audit/__init__.py
 attacks/capability/NTI_A201.py
+attacks/capability/NTI_A202.py
 attacks/capability/__init__.py
 attacks/infrastructure/NTI_A501.py
 attacks/infrastructure/__init__.py
