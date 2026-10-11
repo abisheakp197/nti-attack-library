@@ -1,8 +1,11 @@
 """Adapter for a remote HTTP agent."""
 
+import logging
 from typing import Any
 import httpx
 from nti_attack.adapters.base import AgentAdapter, AgentResponse
+
+logger = logging.getLogger(__name__)
 
 
 class HttpAgentAdapter(AgentAdapter):
@@ -30,5 +33,5 @@ class HttpAgentAdapter(AgentAdapter):
         try:
             with httpx.Client(timeout=self.timeout) as client:
                 client.post(f"{self.base_url}/reset", headers=self.headers)
-        except Exception:
-            pass
+        except httpx.HTTPError as e:
+            logger.warning("Failed to reset HTTP agent at %s: %s", self.base_url, e)

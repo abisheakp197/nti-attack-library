@@ -1,10 +1,13 @@
 """Discovers and instantiates every attack in this package."""
 
 import importlib
+import logging
 import pkgutil
 from typing import List
 
 from nti_attack.core import Attack
+
+logger = logging.getLogger(__name__)
 
 
 def _iter_attack_classes():
@@ -14,7 +17,8 @@ def _iter_attack_classes():
             continue
         try:
             mod = importlib.import_module(modname)
-        except Exception:
+        except (ImportError, AttributeError, TypeError) as e:
+            logger.warning("Failed to import module %s: %s", modname, e)
             continue
         for name in dir(mod):
             obj = getattr(mod, name)
@@ -31,6 +35,7 @@ def get_all_attacks() -> List[Attack]:
                 continue
             seen.add(cls.id)
             instances.append(cls())
-        except Exception:
+        except (ImportError, AttributeError, TypeError) as e:
+            logger.warning("Failed to instantiate attack %s: %s", cls, e)
             continue
     return sorted(instances, key=lambda a: a.id)

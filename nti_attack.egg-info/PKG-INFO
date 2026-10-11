@@ -4,6 +4,7 @@ Version: 0.1.0
 Summary: Executable, cryptographically signed attack framework for AI agents
 Requires-Python: >=3.11
 License-File: LICENSE
+Requires-Dist: ube-foundation>=0.1.0
 Requires-Dist: httpx>=0.27.0
 Requires-Dist: click>=8.1.0
 Requires-Dist: rich>=13.0.0
