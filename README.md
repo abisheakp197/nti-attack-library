@@ -3,7 +3,7 @@
 **A signed, federated, machine-consumable attack knowledge base for AI agents.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![PyPI](https://img.shields.io/pypi/v/nti-attack.svg)](https://pypi.org/project/nti-attack/)
+[![PyPI](https://img.shields.io/pypi/v/nti-attack-library.svg)](https://pypi.org/project/nti-attack-library/)
 
 ## The Painful Problem
 
@@ -50,7 +50,7 @@ Today's answers are all broken:
 
 ## Install
 
-    pip install nti-attack
+    pip install nti-attack-library
 
 ## Quick Start
 
@@ -88,7 +88,7 @@ Verify a signed report offline:
           - uses: actions/checkout@v4
           - uses: actions/setup-python@v5
             with: {python-version: "3.11"}
-          - run: pip install nti-attack
+          - run: pip install nti-attack-library
           - run: nti-attack scan --url ${{ secrets.AGENT_URL }} --agent-id ${{ github.repository }} --commit-sha ${{ github.sha }}
           - run: git add nti-attack-reports/ && git commit -m "chore: NTI attack report [skip ci]" || true
           - run: git push || true
