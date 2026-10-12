@@ -19,7 +19,7 @@ console = Console()
 
 
 @click.group()
-@click.version_option(package_name="nti-attack")
+@click.version_option(package_name="nti-attack-library")
 def main():
     """nti-attack: executable, signed attack framework for AI agents."""
     pass

@@ -1,3 +1,0 @@
-attacks
-cli
-nti_attack
