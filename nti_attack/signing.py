@@ -7,22 +7,24 @@ Uses the real ube_foundation PqcKeyPair API:
 - public_key_hex() -> str
 """
 
-import json
 import hashlib
-from typing import Optional
-from ube_foundation import PqcKeyPair
+import hmac
+import json
+from typing import Any
+
+from ube_foundation import PqcKeyPair  # type: ignore[import-untyped]
 
 
-def _canonical_bytes(payload: dict) -> bytes:
+def _canonical_bytes(payload: dict[str, Any]) -> bytes:
     clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
     return json.dumps(clean, sort_keys=True).encode("utf-8")
 
 
-def compute_cert_hash(payload: dict) -> str:
+def compute_cert_hash(payload: dict[str, Any]) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
 
 
-def sign_payload(payload: dict, key: Optional[PqcKeyPair] = None) -> dict:
+def sign_payload(payload: dict[str, Any], key: PqcKeyPair | None = None) -> dict[str, Any]:
     if key is None:
         key = PqcKeyPair()
     clean = {k: v for k, v in payload.items() if k not in ("signature", "cert_hash")}
@@ -35,10 +37,12 @@ def sign_payload(payload: dict, key: Optional[PqcKeyPair] = None) -> dict:
     }
 
 
-def verify_cert_integrity(payload: dict, key: Optional[PqcKeyPair] = None) -> bool:
-    if not payload.get("cert_hash"):
+def verify_cert_integrity(payload: dict[str, Any], key: PqcKeyPair | None = None) -> bool:
+    cert_hash = payload.get("cert_hash")
+    if not cert_hash or not isinstance(cert_hash, str):
         return False
-    if compute_cert_hash(payload) != payload["cert_hash"]:
+    computed = compute_cert_hash(payload)
+    if not hmac.compare_digest(computed, cert_hash):
         return False
     sig = payload.get("signature")
     if sig is not None:
@@ -48,10 +52,11 @@ def verify_cert_integrity(payload: dict, key: Optional[PqcKeyPair] = None) -> bo
             bytes.fromhex(sig)
         except ValueError:
             return False
-        if not payload.get("issuer_pubkey"):
+        pubkey = payload.get("issuer_pubkey")
+        if not pubkey or not isinstance(pubkey, str):
             return False
         if key is not None:
-            if key.public_key_hex() != payload["issuer_pubkey"]:
+            if not hmac.compare_digest(key.public_key_hex(), pubkey):
                 return False
             message = _canonical_bytes(payload)
             if not key.verify(message, sig):

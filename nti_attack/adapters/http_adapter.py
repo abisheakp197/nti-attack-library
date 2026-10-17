@@ -2,14 +2,21 @@
 
 import logging
 from typing import Any
+
 import httpx
+
 from nti_attack.adapters.base import AgentAdapter, AgentResponse
 
 logger = logging.getLogger(__name__)
 
 
 class HttpAgentAdapter(AgentAdapter):
-    def __init__(self, base_url: str, timeout: float = 30.0, headers=None):
+    def __init__(
+        self,
+        base_url: str,
+        timeout: float = 30.0,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.headers = headers or {}
@@ -25,12 +32,16 @@ class HttpAgentAdapter(AgentAdapter):
                 if r.status_code >= 400:
                     return AgentResponse(output="", error=f"HTTP {r.status_code}")
                 data = r.json()
-                return AgentResponse(output=str(data.get("output", "")), raw=data)
+                if isinstance(data, dict):
+                    output_val = data.get("output", "")
+                else:
+                    output_val = str(data)
+                return AgentResponse(output=str(output_val), raw=data)
         except httpx.HTTPError as e:
             logger.warning("HTTP invoke failed for %s: %s", self.base_url, e)
             return AgentResponse(output="", error=str(e))
-        except Exception as e:
-            logger.warning("Error invoking HTTP agent at %s: %s", self.base_url, e)
+        except (ValueError, TypeError, KeyError) as e:
+            logger.warning("Error parsing response from HTTP agent at %s: %s", self.base_url, e)
             return AgentResponse(output="", error=str(e))
 
     def reset(self) -> None:

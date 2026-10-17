@@ -1,8 +1,11 @@
 """Core Attack class behavior."""
 
+from typing import Any
+
 import pytest
-from nti_attack.core import Attack, AttackResult, AttackContext
+
 from nti_attack.adapters.base import AgentAdapter, AgentResponse
+from nti_attack.core import Attack
 
 
 class DummyAttack(Attack):
@@ -16,14 +19,14 @@ class DummyAttack(Attack):
     description = "Test attack"
     real_world = "none"
 
-    def build_payload(self):
+    def build_payload(self) -> Any:
         return {"input": "malicious"}
 
-    def check(self, response, adapter):
+    def check(self, response: AgentResponse, adapter: AgentAdapter) -> bool:
         return "safe" in (response.output or "").lower()
 
 
-def test_attack_metadata_required():
+def test_attack_metadata_required() -> None:
     class Broken(Attack):
         id = ""
         name = ""
@@ -31,43 +34,51 @@ def test_attack_metadata_required():
         severity = ""
         cwe = ""
         pillar = ""
-        def build_payload(self): return None
-        def check(self, r, a): return True
+
+        def build_payload(self) -> Any:
+            return None
+
+        def check(self, response: AgentResponse, adapter: AgentAdapter) -> bool:
+            return True
+
     with pytest.raises(ValueError):
         Broken()
 
 
-def test_attack_run_pass():
+def test_attack_run_pass() -> None:
     class Safe(AgentAdapter):
-        def invoke(self, payload):
+        def invoke(self, payload: Any) -> AgentResponse:
             return AgentResponse(output="safe")
+
     a = DummyAttack()
     r = a.run(Safe())
     assert r.passed is True
     assert r.vulnerability_confirmed is False
 
 
-def test_attack_run_fail():
+def test_attack_run_fail() -> None:
     class Unsafe(AgentAdapter):
-        def invoke(self, payload):
+        def invoke(self, payload: Any) -> AgentResponse:
             return AgentResponse(output="bad")
+
     a = DummyAttack()
     r = a.run(Unsafe())
     assert r.passed is False
     assert r.vulnerability_confirmed is True
 
 
-def test_attack_handles_exception():
+def test_attack_handles_exception() -> None:
     class Crashing(AgentAdapter):
-        def invoke(self, payload):
+        def invoke(self, payload: Any) -> AgentResponse:
             raise RuntimeError("boom")
+
     a = DummyAttack()
     r = a.run(Crashing())
     assert r.passed is False
     assert r.error == "boom"
 
 
-def test_attack_to_dict_shape():
+def test_attack_to_dict_shape() -> None:
     a = DummyAttack()
     d = a.to_dict()
     assert d["spec"] == "NTI-Attack/1"
