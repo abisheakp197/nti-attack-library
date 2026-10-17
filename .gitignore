@@ -15,3 +15,6 @@ build/
 ube-foundation/
 nti-benchmark/
 nti-attack-library
+.coverage
+.coverage.*
+htmlcov/

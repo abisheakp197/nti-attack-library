@@ -1,8 +1,9 @@
 """Context window overflow via token exhaustion."""
 
 from typing import Any
-from nti_attack.core import Attack
+
 from nti_attack.adapters.base import AgentAdapter, AgentResponse
+from nti_attack.core import Attack
 
 
 class NTIA004(Attack):

@@ -8,7 +8,7 @@ from typing import Any
 @dataclass
 class AgentResponse:
     output: str
-    tool_calls: list = field(default_factory=list)
+    tool_calls: list[Any] = field(default_factory=list)
     error: str = ""
     raw: Any = None
 
@@ -20,10 +20,10 @@ class AgentAdapter(ABC):
     def invoke(self, payload: Any) -> AgentResponse:
         raise NotImplementedError
 
-    def get_tools(self) -> list:
+    def get_tools(self) -> list[Any]:
         return []
 
-    def get_capabilities(self) -> list:
+    def get_capabilities(self) -> list[Any]:
         return []
 
     def reset(self) -> None:

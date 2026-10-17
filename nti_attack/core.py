@@ -1,9 +1,12 @@
 """Core attack primitives. Every attack subclasses Attack."""
 
-from dataclasses import dataclass, field
-from typing import Any, Optional
-from abc import ABC, abstractmethod
 import time
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from nti_attack.adapters.base import AgentAdapter
 
 
 @dataclass
@@ -11,12 +14,12 @@ class AttackResult:
     attack_id: str
     passed: bool
     severity: str
-    evidence: dict = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
     vulnerability_confirmed: bool = False
     duration_ms: int = 0
-    error: Optional[str] = None
+    error: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "attack_id": self.attack_id,
             "passed": self.passed,
@@ -34,7 +37,7 @@ class AttackContext:
     repo: str = ""
     branch: str = ""
     node_url: str = ""
-    extra: dict = field(default_factory=dict)
+    extra: dict[str, Any] = field(default_factory=dict)
 
 
 class Attack(ABC):
@@ -50,7 +53,7 @@ class Attack(ABC):
     description: str = ""
     real_world: str = ""
 
-    def __init__(self):
+    def __init__(self) -> None:
         required = [self.id, self.name, self.category, self.severity, self.cwe, self.pillar]
         if not all(required):
             raise ValueError(f"{self.__class__.__name__} missing required metadata")
@@ -68,7 +71,7 @@ class Attack(ABC):
     def remediation(self) -> str:
         return "pip install ube-foundation and wrap your agent with the matching NTI handler."
 
-    def run(self, adapter: "AgentAdapter", context: Optional[AttackContext] = None) -> AttackResult:
+    def run(self, adapter: "AgentAdapter", context: AttackContext | None = None) -> AttackResult:
         start = time.time()
         try:
             adapter.reset()
@@ -87,7 +90,7 @@ class Attack(ABC):
                 vulnerability_confirmed=not defended,
                 duration_ms=int((time.time() - start) * 1000),
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return AttackResult(
                 attack_id=self.id,
                 passed=False,
@@ -96,7 +99,7 @@ class Attack(ABC):
                 duration_ms=int((time.time() - start) * 1000),
             )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "spec": "NTI-Attack/1",
             "id": self.id,

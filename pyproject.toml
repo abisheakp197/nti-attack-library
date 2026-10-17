@@ -26,3 +26,6 @@ include = ["nti_attack*", "attacks*", "cli*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+
+[tool.ruff.lint]
+ignore = ["N999"]

@@ -4,7 +4,7 @@ from nti_attack.attestation import build_report, sign_report, verify_report
 from nti_attack.core import AttackResult
 
 
-def test_signed_report_verifies():
+def test_signed_report_verifies() -> None:
     results = [AttackResult(attack_id="A1", passed=True, severity="high")]
     r = build_report("agent-x", "abc123", results)
     s = sign_report(r)

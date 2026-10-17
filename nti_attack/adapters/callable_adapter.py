@@ -1,11 +1,18 @@
 """Wraps any Python callable as an agent."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 from nti_attack.adapters.base import AgentAdapter, AgentResponse
 
 
 class CallableAdapter(AgentAdapter):
-    def __init__(self, fn: Callable[[Any], Any], tools=None, capabilities=None):
+    def __init__(
+        self,
+        fn: Callable[[Any], Any],
+        tools: list[Any] | None = None,
+        capabilities: list[Any] | None = None,
+    ) -> None:
         self.fn = fn
         self._tools = tools or []
         self._capabilities = capabilities or []
@@ -16,11 +23,11 @@ class CallableAdapter(AgentAdapter):
             if isinstance(result, AgentResponse):
                 return result
             return AgentResponse(output=str(result), raw=result)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return AgentResponse(output="", error=str(e))
 
-    def get_tools(self) -> list:
+    def get_tools(self) -> list[Any]:
         return list(self._tools)
 
-    def get_capabilities(self) -> list:
+    def get_capabilities(self) -> list[Any]:
         return list(self._capabilities)
