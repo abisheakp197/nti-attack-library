@@ -117,3 +117,44 @@ See [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md). Every attack must be executa
 ## License
 
 Apache License 2.0. See LICENSE.
+
+## Architecture
+
+```mermaid
+graph TD
+    CLI["CLI / CI Pipeline<br/><code>nti-attack scan / run</code>"]
+
+    subgraph AE["Attack Engine"]
+        AR["Attack Registry<br/>(10 Attacks / 6 Categories)"]
+        PE["Payload Execution Engine<br/>(runner.py)"]
+        AA["Agent Adapters<br/>(HttpAgentAdapter / CallableAdapter)"]
+        EC["Evidence Capture<br/>(AttackResult & Logs)"]
+
+        AR -->|Discovers & Loads| PE
+        PE -->|Routes Request| AA
+    end
+
+    subgraph TE["Target Environment"]
+        HA["Target HTTP Agent"]
+        CA["Python Callable Agent"]
+    end
+
+    subgraph RE["NTI Reporting Engine"]
+        RB["Report Builder<br/>(build_report)"]
+        PK["PqcKeyPair<br/>(Dilithium5 Quantum-Resistant Keys)"]
+        DS["Dilithium5 Signature<br/>(sign_report / sign_payload)"]
+        OR["Offline-Verifiable Report<br/>(NTI-Attack-Report/1 JSON)"]
+
+        RB --> DS
+        PK --> DS
+        DS --> OR
+    end
+
+    CLI -->|Triggers Execution| PE
+    AA -->|HTTP POST| HA
+    AA -->|Python Call| CA
+    HA -->|Response Data| EC
+    CA -->|Response Data| EC
+    PE -->|Collects Evidence| EC
+    EC -->|Evidence Data| RB
+```
