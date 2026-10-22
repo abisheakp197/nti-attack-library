@@ -1,3 +1,5 @@
+[![NTI Verified](https://img.shields.io/badge/NTI_Score-80%2F100-brightgreen)](https://nti-registry.vercel.app)
+
 # NTI Attack Library
 
 **A signed, federated, machine-consumable attack knowledge base for AI agents.**
